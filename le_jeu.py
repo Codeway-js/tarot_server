@@ -77,21 +77,23 @@ distribution()
 print(j3.toList())
 print(j4.toList())
 # enchère()
-
-def cartejouable(carte, cartebase):
-    if carte == "Aat":
+def get_val(carte):
+    return ord(carte[0])-65
+# carte base = [class, valeur]
+def cartejouable(carte:tarot_class.Carte, cartebase: list):
+    if str(carte) == "Aat":
         return 0
     if cartebase[1] != "at":
-        if carte[1:] == cartebase[1]:
+        if carte.types == cartebase[1]:
             return 4
-        elif carte[1:] == "at":
-            if ord(carte[0])-65 > cartebase[0]:
+        elif carte.types == "at":
+            if carte.numero > cartebase[0]:
                 return 3
             return 2
         return 1
     else:
-        if carte[1:] == "at":
-            if ord(carte[0])-65 > cartebase[0]:
+        if carte.types == "at":
+            if carte.numero > cartebase[0]:
                 return 3
             return 2
         return 1
@@ -115,39 +117,41 @@ def tour(starter):
         verif=cartejouablepremiertour(j1carte,starter.cartes)
 
         if verif==True:
-            if j1carte[1:]=="at":
-                tas[0]=ord(j1carte[0])-65
-                print(tas[0])
-
-            for i in range (1,4): #test de la puissance
-                jact=dct[(i+numstart)%4]
-                puiss=[cartejouable(str(jact.cartes[i]),tas) for i in range (len(jact.cartes))]
-                maximum=puiss[0]
-
-                for j in puiss: #test des cartes jouables
-                    if j>maximum:
-                        maximum=j
-                jouable=[str(jact.cartes[i]) for i in range (len(jact.cartes)) if puiss[i]==maximum or puiss[i]==0]
-                print(jouable)
-
-                peutjouer=True
-                while peutjouer : #action concrète des autres joueurs
-                    print(jact.toList())
-                    jcarte=input("Quel carte voulez-vous déposer ? ")
-                    if jcarte in jouable :
-                        cj=tarot_class.convertstrcarte(jcarte)
-                        tas.append(cj)
-                        jact.removeCartestr(jcarte)
-                        print(jact.toList())
-                        if cj.numero>tas[0]:
-                            tas[0]=cj.numero
-                        print(tas)
-                        peutjouer=False
-                    else:
-                        print("Cette carte n'est pas jouable, veuillez en sélectionner une jouable.")
             onjoue=False
         else:
             print("Cette carte n'est pas jouable, veuillez en sélectionner une jouable.")
+
+    if j1carte[1:]=="at":
+        tas[0]=get_val(j1carte)
+        print(tas[0])
+
+    for i in range (1,4): 
+        #jact = joueur qui joue
+        jact=dct[(i+numstart)%4]
+        puiss=[cartejouable(carte,tas) for carte in jact.cartes]
+        maximum=puiss[0]
+
+        for j in puiss: #test des cartes jouables
+            if j>maximum:
+                maximum=j
+                jouable=[str(jact.cartes[i]) for i in range (len(jact.cartes)) if puiss[i]==maximum or puiss[i]==0]
+                print(jouable,maximum,puiss)
+
+        peutjouer=True
+        while peutjouer : #action concrète des autres joueurs
+            print(jact.toList(),jouable)
+            jcarte=input("Quel carte voulez-vous déposer ? ")
+            if jcarte in jouable :
+                peutjouer=False
+            else:
+                print("Cette carte n'est pas jouable, veuillez en sélectionner une jouable.")
+        cj=tarot_class.convertstrcarte(jcarte)
+        tas.append(cj)
+        jact.removeCartestr(jcarte)
+        print(jact.toList())
+        if cj.numero>tas[0]:
+            tas[0]=cj.numero
+            print(tas)
         # Faut faire le gagnant : jpeux me servir de la puissance (je pense car ça peut me faire gagner du temps, dans le sens, je prends la première carte, 
         # dans tous ce qui peut être mieux = de toutes les cartes, si dans les cartes suivantes y'a ça qu'est joué alors c bon) 
         # OU dans le sens ou je regarde une par une les cartes pour savoir si c de l'atout ou de la couleur. 
