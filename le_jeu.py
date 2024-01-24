@@ -104,6 +104,18 @@ def cartejouablepremiertour(carte,cartesjeu):
             return True
     return False
 
+
+def cartepuiss(jeu:tarot_class.Tas,puiss)->tarot_class.Tas:
+    t=tarot_class.Tas([])
+    maximum = puiss[0]
+    for j in puiss: #test des cartes jouables
+        if j>maximum:
+            maximum=j
+    for i in range(len(jeu.cartes)):
+        if puiss[i]==maximum or puiss[i]==0:
+            t.append(jeu.cartes[i])
+    return t
+
 def tour(starter):
     onjoue=True
 
@@ -128,30 +140,26 @@ def tour(starter):
     for i in range (1,4): 
         #jact = joueur qui joue
         jact=dct[(i+numstart)%4]
+        print(jact.nom)
         puiss=[cartejouable(carte,tas) for carte in jact.cartes]
-        maximum=puiss[0]
-
-        for j in puiss: #test des cartes jouables
-            if j>maximum:
-                maximum=j
-                jouable=[str(jact.cartes[i]) for i in range (len(jact.cartes)) if puiss[i]==maximum or puiss[i]==0]
-                print(jouable,maximum,puiss)
+        jouable=cartepuiss(jact,puiss)
 
         peutjouer=True
         while peutjouer : #action concrète des autres joueurs
-            print(jact.toList(),jouable)
+            print(jact)
+            print(jouable)
+            print(tas)
             jcarte=input("Quel carte voulez-vous déposer ? ")
-            if jcarte in jouable :
+            cj=tarot_class.convertstrcarte(jcarte)
+            if jcarte in str(jouable) :
                 peutjouer=False
             else:
                 print("Cette carte n'est pas jouable, veuillez en sélectionner une jouable.")
-        cj=tarot_class.convertstrcarte(jcarte)
+        
         tas.append(cj)
         jact.removeCartestr(jcarte)
-        print(jact.toList())
         if cj.numero>tas[0]:
             tas[0]=cj.numero
-            print(tas)
         # Faut faire le gagnant : jpeux me servir de la puissance (je pense car ça peut me faire gagner du temps, dans le sens, je prends la première carte, 
         # dans tous ce qui peut être mieux = de toutes les cartes, si dans les cartes suivantes y'a ça qu'est joué alors c bon) 
         # OU dans le sens ou je regarde une par une les cartes pour savoir si c de l'atout ou de la couleur. 

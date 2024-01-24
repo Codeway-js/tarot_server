@@ -6,6 +6,10 @@ class Carte:
         self.types=types
     def __str__(self):
         return str(chr(self.numero+65)+self.types)
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o,Carte):
+            return self.numero == o.numero and self.types == o.types
+        return False
 
 def convertstrcarte(s):
     l1=s[0]
@@ -13,7 +17,7 @@ def convertstrcarte(s):
     return Carte(num,s[1:])
 
 class Tas:
-    def __init__(self, cartes):
+    def __init__(self, cartes= []):
         self.cartes=cartes
         
     def toList(self):
@@ -31,10 +35,26 @@ class Tas:
             if carte==str(el) :
                 return self.cartes.remove(el)
 
+    def filtre(self,f):
+        T = Tas()
+        for i in range(len(self.cartes)):
+            el = self.cartes[i] 
+            if f(el,i):
+                T.append(el)
+        return T
 
     def append(self, v):
         self.cartes.append(v)
     
+    def __str__(self):
+        s = "["
+        for el in self.cartes:
+            s+=str(el)+", "
+        return s+"]"
+
+
+
+
 class Joueur (Tas):
     def __init__(self, nom, carte, pris):
         self.nom=nom
