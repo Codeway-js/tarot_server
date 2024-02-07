@@ -1,5 +1,7 @@
 from random import*
-
+import server
+import asyncio
+import queue
 class Carte:
     def __init__(self,numero,types):
         self.numero=numero
@@ -54,13 +56,28 @@ class Tas:
 
 
 
-
 class Joueur (Tas):
-    def __init__(self, nom, carte, pris):
-        self.nom=nom
-        Tas.__init__(self, carte)
-        self.pris=pris
+    def __init__(self, ws,queue:queue.Queue,nom):
+        Tas.__init__(self,[])
+        self.pris=False
+        self.ws = ws
+        self.queue = queue
+        self.nom = nom
     
+    def sendmsg(self,msg):
+        asyncio.run(server.send_msg(self.ws,msg))
+
+    def waitmsg(self):
+        while self.queue.qsize()>0:
+            self.queue.get()
+        return self.queue.get()
+
+    
+
+
+
+
+
 c1=Carte(1,"ca")
 #print(c1)
 c2=Tas([c1])
