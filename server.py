@@ -1,76 +1,52 @@
-import time
 import queue
-import asyncio
-import websockets
-import threading
-import _thread
 import json
 import tarot_class
+from websocket_server import WebsocketServer
 USER = []
-# shared = [queue.Queue() for _ in range(5)]
-c = threading.Condition()
-shared_bool = threading.Event()
-
 conter = []
-nombrejoueur = 1
-def ws(queue):
+nombrejoueur = 4
+
+client_queue = []
+for i in range(5):
+    client_queue.append(queue.Queue())
+cq = client_queue
+
+
+def new_player(c,s):       
+    global USER
+    USER.append(c)
     
-    async def echo(websocket):
-        global USER,conter
-        if not websocket in USER:
-            USER.append(websocket)
-        async for message in websocket:
-            index = USER.index(websocket)
-            print(message,index)
-            if message =="yo":
-                queue[index].put(message)
-            try:
-                dct = json.loads(message)
-                print(dct)
-                if dct["op"] == 1:
-                    print('gkflgk')
-                    if len(conter) < nombrejoueur:
-                        print('yoyooy')
-                        conter.append(tarot_class.Joueur(websocket,queue[USER.index(websocket)],dct["data"]["nom"]))
-                        print(conter)
-                        if len(conter) == nombrejoueur:
-                            queue[4].put(conter) 
-                elif dct["op"] == 2:
-                    queue[index].put(dct["data"]["niveau"])
-                elif dct["op"] == 3:
-                    queue[index].put(dct["data"]["chien"])
-            except:
-                print('fail to transformto json')
-
-            
-                
-    async def main():
-        async with websockets.serve(echo, "localhost", 800):
-            while True:
-                await asyncio.Future()
-         
-    asyncio.run(main())
-
-
-def cl(queue):
     
-    global val
-    
-    print("Main thread waiting 10s")
-    time.sleep(10)
-    print("finish waiting")
-    print("testck",queue[0].get(),USER)
-    asyncio.run(send_msg(USER[0],'yoo'))
+def msg(c,s,m):
+    global conter
+    index = USER.index(c)
+    try:
+        dct = json.loads(m)
+        print(dct)
+        if dct["op"] == 1:
+            print('gkflgk')
+            if len(conter) < nombrejoueur:
+                print('yoyooy')
+                conter.append(tarot_class.Joueur(c,s,cq[USER.index(c)],dct["data"]["nom"],False))
+                print(conter)
+                if len(conter) == nombrejoueur:
+                    print("fjdindfsh")
+                    cq[4].put(conter) 
+        elif dct["op"] == 2:
+            cq[index].put(dct["data"]["lvl"])
+        elif dct["op"] == 3:
+            print("yo")
+            cq[index].put(dct["data"]["carte"])
+        elif dct["op"] == 4:
+            cq[index].put(dct["data"]["carte"])
+    except:
+        print('fail to transformto json')
 
-async def send_msg(Ws,msg):
-    await Ws.send(msg)
 
-# t1 = threading.Thread(target=ws,args=(shared,))
-# # t2 = threading.Thread(target=cl,args=(shared,))
-# t1.start()
-# # t2.start()
-# print("yo")
 
-# t1.join()
-# # t2.join()
-### OMGGGGGG CA MARCHE CKDSFKJ?LDSKFLDSKFLMKDLFKDMLKFMLSKFLKDSLMFKGKJLfk
+server = WebsocketServer(port=800)
+server.set_fn_new_client(new_player)
+server.set_fn_message_received(msg)
+server.run_forever(True)
+
+
